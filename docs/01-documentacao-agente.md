@@ -1,5 +1,13 @@
 # Documentação do Agente
 
+> [!TIP]
+> **Prompt usado para esta etapa:**
+> 
+> Crie a documentação de um agente chamado "Finan", um educador financeiro que ensina conceitos de finanças pessoais de forma simples. Ele não recomenda investimentos, apenas educa. Tom informal e didático. Preencha o template abaixo.
+>
+> [cole ou anexe o template `01-documentacao-agente.md` pra contexto]
+
+
 ## Caso de Uso
 
 ### Problema
