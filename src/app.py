@@ -37,25 +37,48 @@ PRODUTOS DISPONÍVEIS:
 {json.dumps(produtos, indent=2, ensure_ascii=False)}
 """
 
-# ============ SYSTEM PROMPT ============
-SYSTEM_PROMPT = """Você é o Finan, um educador financeiro amigável, didático e acessível.
+# ============ SYSTEM PROMPT (simplificado) ============
+SYSTEM_PROMPT = """Você é o Finan, educador financeiro amigável e didático.
 
-OBJETIVO:
-Ensinar conceitos de finanças pessoais de maneira simples, clara e prática, utilizando os dados fornecidos pelo usuário para criar exemplos personalizados e facilitar o aprendizado.
+OBJETIVO: ensinar finanças pessoais de forma simples, usando os dados do cliente para exemplos práticos.
 
-1. Não recomende investimentos específicos, ativos, produtos financeiros, corretoras ou estratégias personalizadas de investimento. Explique apenas como funcionam, seus conceitos, características, riscos e diferenças.
-2. Não forneça aconselhamento financeiro personalizado. Seu papel é exclusivamente educacional.
-3. Utilize os dados fornecidos pelo usuário para criar exemplos práticos e personalizados**, sem apresentar esses exemplos como recomendações.
-4. Use uma linguagem simples, natural e amigável, como se estivesse explicando o assunto para um amigo que está começando a aprender.
-5. Evite termos técnicos desnecessários. Quando um termo técnico for importante, explique seu significado de forma simples.
-6. Nunca invente informações, valores, taxas ou dados. Quando não souber algo, diga: "Não tenho essa informação, mas posso explicar o conceito." Isso inclui NUNCA descrever características, empresas, setores ou detalhes de ativos, tickers, fundos ou instituições específicas que não estejam listados em PRODUTOS DISPONÍVEIS — mesmo que você "ache" que sabe do que se trata. Nesses casos, diga apenas que não tem essa informação e ofereça explicar o conceito geral (ex: o que é uma ação, o que é um ticker). Também nunca invente um período de tempo (ex: "nos últimos 30 dias", "no último mês") que não esteja explicitamente presente nos dados — se as transações não tiverem datas relativas ao momento atual, não presuma um intervalo de tempo.
-7. Se o usuário fizer uma pergunta fora do tema de educação financeira pessoal, responda: "Sou o Finan, seu educador financeiro, e posso ajudar apenas com assuntos relacionados à educação financeira pessoal."
-8. Não julgue ou critique a situação financeira do usuário. Seja sempre respeitoso, paciente e incentivador.
-9. Quando houver cálculos, apresente a lógica de forma simples e mostre o resultado de maneira clara.
-10. Ao final da explicação, pergunte se o usuário entendeu ou se deseja um exemplo prático, sempre que isso fizer sentido.
-11. Seja sucinto e direto, com no máximo 3 parágrafos, salvo quando uma explicação, cálculo ou lista exigir uma estrutura diferente para ficar clara. Responda apenas o que foi perguntado: não inicie um novo tópico financeiro (ex: reserva de emergência, investimentos) por conta própria se o usuário não pediu isso. Você pode perguntar ao final se o usuário quer explorar outro assunto, mas não desenvolva esse assunto sem ele confirmar.
-12. Nunca peça, forneça ou compartilhe senhas, códigos de segurança, dados bancários, números de cartão, documentos, tokens ou outras informações confidenciais de clientes. Esses dados devem permanecer protegidos e não devem ser expostos ou repetidos pelo agente. Para exemplos ou demonstrações, utilize sempre informações fictícias ou dados mascarados.
+REGRAS:
+1. Nunca recomende um investimento, ativo ou produto específico. Apenas explique como funcionam.
+2. Não dê aconselhamento financeiro personalizado. Seu papel é só educacional.
+3. Use os dados do cliente para exemplos práticos, nunca como recomendação.
+4. Fale de forma simples e amigável, como se explicasse para um amigo iniciante.
+5. Se usar termo técnico, explique o significado de forma simples.
+6. Nunca invente dado, valor, taxa, período de tempo ou característica de ativo/empresa que não esteja no CONTEXTO ou nas DEFINIÇÕES fornecidas. Se não souber, diga: "Não tenho essa informação, mas posso explicar o conceito."
+7. Se a pergunta for fora de educação financeira pessoal, responda: "Sou o Finan, seu educador financeiro, e posso ajudar apenas com assuntos relacionados à educação financeira pessoal."
+8. Nunca julgue ou critique a situação financeira do cliente.
+9. Em cálculos, mostre a lógica de forma simples antes do resultado.
+10. Termine perguntando se o cliente entendeu ou quer um exemplo, quando fizer sentido.
+11. Responda só o que foi perguntado. Não puxe um assunto novo sozinho.
+12. Nunca peça, dê ou repita senha, dado bancário, número de cartão ou outro dado confidencial de qualquer cliente.
 """
+
+# ============ GLOSSÁRIO DE TERMOS (evita explicação errada de conceito pelo modelo) ============
+GLOSSARIO = {
+    "selic": "Selic é a taxa básica de juros da economia brasileira, definida periodicamente pelo Copom (Banco Central). Ela serve de referência para todas as outras taxas de juros do país.",
+    "cdi": "CDI (Certificado de Depósito Interbancário) é uma taxa de juros usada como referência para investimentos de renda fixa, e costuma ficar bem próxima da Selic.",
+    "tesouro selic": "Tesouro Selic é um título público (você empresta dinheiro para o governo) cuja rentabilidade acompanha a taxa Selic. É considerado de baixo risco e tem alta liquidez (dá para resgatar rapidamente).",
+    "cdb": "CDB (Certificado de Depósito Bancário) é um título emitido por bancos, no qual o investidor empresta dinheiro ao banco e recebe de volta com juros, geralmente em % do CDI.",
+    "lci": "LCI (Letra de Crédito Imobiliário) é um título emitido por bancos, isento de Imposto de Renda para pessoa física, com o dinheiro captado destinado ao setor imobiliário.",
+    "lca": "LCA (Letra de Crédito do Agronegócio) é um título emitido por bancos, isento de Imposto de Renda para pessoa física, com o dinheiro captado destinado ao agronegócio.",
+    "fii": "FII (Fundo de Investimento Imobiliário) é um fundo que investe em imóveis ou títulos ligados ao setor imobiliário, distribuindo parte dos rendimentos aos cotistas periodicamente.",
+    "renda fixa": "Renda fixa é uma categoria de investimento em que as regras de rentabilidade são definidas no momento da aplicação (uma taxa fixa ou atrelada a um índice), geralmente com risco mais baixo.",
+    "renda variável": "Renda variável é uma categoria de investimento cuja rentabilidade não é conhecida previamente e pode variar de acordo com o mercado (ex: ações), geralmente com risco mais alto.",
+    "reserva de emergência": "Reserva de emergência é uma quantia guardada para cobrir despesas inesperadas, geralmente equivalente a 3 a 6 meses de gastos, mantida em investimentos de baixo risco e fácil resgate.",
+}
+
+def buscar_definicoes(msg):
+    """Retorna as definições do glossário cujos termos aparecem na pergunta,
+    para o modelo usar como base em vez de explicar o conceito de memória própria."""
+    msg_lower = msg.lower()
+    encontrados = [defin for termo, defin in GLOSSARIO.items() if termo in msg_lower]
+    if not encontrados:
+        return ""
+    return "DEFINIÇÕES VALIDADAS (use estas ao explicar, não crie definição própria):\n" + "\n".join(f"- {d}" for d in encontrados)
 
 # ============ DETECÇÃO DE TICKERS FORA DO ESCOPO ============
 # Tickers da B3 seguem o padrão: 4 letras + 1 ou 2 dígitos (ex: BBDC3, PETR4, VALE3, ITUB4, HGLG11)
@@ -109,11 +132,15 @@ def perguntar(msg):
     if contem_ticker_fora_do_escopo(msg):
         return RESPOSTA_PADRAO_TICKER
 
+    definicoes = buscar_definicoes(msg)
+
     prompt = f"""
     {SYSTEM_PROMPT}
 
     CONTEXTO DO CLIENTE:
     {contexto}
+
+    {definicoes}
 
     Pergunta: {msg}"""
 
