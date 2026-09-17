@@ -1,40 +1,33 @@
 # Base de Conhecimento
 
-**Prompt usado para esta etapa:**
-> [!TIP]
-> Organize a base de conhecimento do agente "Finan" usando os 4 arquivos da pasta `data/` (em anexo). Explique pra que serve cada arquivo e monte um exemplo de contexto formatado que será enviado pro LLM. Preencha o template abaixo.
->
-[cole ou anexe o template `02-base-conhecimento.md` pra contexto]
+A base de conhecimento do agente **Finan** reúne os dados utilizados para contextualizar as respostas do modelo. Ela é formada pelos arquivos da pasta `data/` e é carregada pela aplicação em Python.
 
 ## Dados Utilizados
 
 | Arquivo | Formato | Para que serve no Finan? |
-|---------|---------|---------------------|
-| `historico_atendimento.csv` | CSV | Contextualizar interações anteriores, ou seja, dar continuidade ao atendimento de forma mais eficiente. |
-| `perfil_investidor.json` | JSON | Personalizar as explicações sobre as dúvidas e necessidades de aprendizagem do cliente. |
-| `produtos_financeiros.json` | JSON | Conhecer os produtos disponíveis para que eles possam ser ensinados ao cliente. |
-| `transacoes.csv` | CSV | Analisar padrão de gastos do cliente e usar essas informações de forma didática. |
+|---------|---------|---------------------------|
+| `historico_atendimento.csv` | CSV | Fornece o histórico de interações anteriores do cliente. |
+| `perfil_investidor.json` | JSON | Contém os dados de perfil, objetivos, patrimônio e metas utilizados como contexto. |
+| `produtos_financeiros.json` | JSON | Contém os produtos financeiros disponíveis para explicação pelo agente. |
+| `transacoes.csv` | CSV | Contém as transações usadas para gerar o resumo de gastos por categoria. |
 
 ---
 
 ## Adaptações nos Dados
 
-> Você modificou ou expandiu os dados mockados? Descreva aqui.
-
-O produto Fundo Imobiliário (FII) substituiu o Fundo Multimercado, pois pessoalmente me sinto mais confiante em usar produtos financeiros que eu eu conheço. Assim, poderei validar as respostas do Finan de forma mais acertiva.
+O produto **Fundo Imobiliário (FII)** substituiu o Fundo Multimercado, pois pessoalmente me sinto mais confiante em usar produtos financeiros que conheço. Assim, posso validar as respostas do Finan com mais segurança durante os testes.
 
 ---
 
 ## Estratégia de Integração
 
 ### Como os dados são carregados?
-> Descreva como seu agente acessa a base de conhecimento.
 
-Existem duas possibilidades , injetar os dados diretamente no prompt (Ctrl + c, Ctrl + v) ou carregar os arquivos via código, como no exemplo abaixo:
+Os arquivos são carregados diretamente pela aplicação em `src/app.py`:
 
-```python 
-import pandas as pd
+```python
 import json
+import pandas as pd
 
 perfil = json.load(open('./data/perfil_investidor.json'))
 transacoes = pd.read_csv('./data/transacoes.csv')
@@ -42,131 +35,66 @@ historico = pd.read_csv('./data/historico_atendimento.csv')
 produtos = json.load(open('./data/produtos_financeiros.json'))
 ```
 
-### Como os dados são usados no prompt?
-> Os dados vão no system prompt? São consultados dinamicamente?
+Além de carregar as transações, a aplicação calcula automaticamente os totais das despesas por categoria:
 
-Para simplificar, podemos simplesmente "injetar" os dados em nosso prompt, garantindo que o agente tenha o melhor contexto possivel. Lembrando que, em soluções mais robustas, o ideal é que essas informações sejam carregadas dinamicamente para que possamos ganhar flexibilidade.
-
-```text
-DADOS DO CLIENTE E PERFIL (data/perfil_investidor.json):
-{
-  "nome": "João Silva",
-  "idade": 32,
-  "profissao": "Analista de Sistemas",
-  "renda_mensal": 5000.00,
-  "perfil_investidor": "moderado",
-  "objetivo_principal": "Construir reserva de emergência",
-  "patrimonio_total": 15000.00,
-  "reserva_emergencia_atual": 10000.00,
-  "aceita_risco": false,
-  "metas": [
-    {
-      "meta": "Completar reserva de emergência",
-      "valor_necessario": 15000.00,
-      "prazo": "2026-06"
-    },
-    {
-      "meta": "Entrada do apartamento",
-      "valor_necessario": 50000.00,
-      "prazo": "2027-12"
-    }
-  ]
-}
-
-TRANSACOES DO CLIENTE (data/transacoes.csv):
-data,descricao,categoria,valor,tipo
-2025-10-01,Salário,receita,5000.00,entrada
-2025-10-02,Aluguel,moradia,1200.00,saida
-2025-10-03,Supermercado,alimentacao,450.00,saida
-2025-10-05,Netflix,lazer,55.90,saida
-2025-10-07,Farmácia,saude,89.00,saida
-2025-10-10,Restaurante,alimentacao,120.00,saida
-2025-10-12,Uber,transporte,45.00,saida
-2025-10-20,Hyrox,saude,299.90,saida
-2025-10-15,Conta de Luz,moradia,180.00,saida
-2025-10-20,Academia,saude,99.00,saida
-2025-10-25,Combustível,transporte,250.00,saida
-
-HISTORICO DE ATENDIMENTO DO CLIENTE (data/historico_atendimento.csv):
-data,canal,tema,resumo,resolvido
-2025-09-15,chat,CDB,Cliente perguntou sobre rentabilidade e prazos,sim
-2025-09-22,telefone,Problema no app,Erro ao visualizar extrato foi corrigido,sim
-2025-10-01,chat,Tesouro Selic,Cliente pediu explicação sobre o funcionamento do Tesouro Direto,sim
-2025-10-12,chat,Metas financeiras,Cliente acompanhou o progresso da reserva de emergência,sim
-2025-10-25,email,Atualização cadastral,Cliente atualizou e-mail e telefone,sim
-
-PRODUTOS DISPONIVEIS PARA ENSINO (data/produtos_financeiros.json):
-[
-  {
-    "nome": "Tesouro Selic",
-    "categoria": "renda_fixa",
-    "risco": "baixo",
-    "rentabilidade": "100% da Selic",
-    "aporte_minimo": 30.00,
-    "indicado_para": "Reserva de emergência e iniciantes"
-  },
-  {
-    "nome": "CDB Liquidez Diária",
-    "categoria": "renda_fixa",
-    "risco": "baixo",
-    "rentabilidade": "102% do CDI",
-    "aporte_minimo": 100.00,
-    "indicado_para": "Quem busca segurança com rendimento diário"
-  },
-  {
-    "nome": "LCI/LCA",
-    "categoria": "renda_fixa",
-    "risco": "baixo",
-    "rentabilidade": "95% do CDI",
-    "aporte_minimo": 1000.00,
-    "indicado_para": "Quem pode esperar 90 dias (isento de IR)"
-  },
-  {
-    "nome": "Fundo Imobiliário (FII)",
-    "categoria": "fundo",
-    "risco": "medio",
-    "rentabilidade": "Dividend Yield (DY) costuma ficar entre 6% a 12% ao ano",
-    "aporte_minimo": 100.00,
-    "indicado_para": "Perfil moderado que busca diversificação e renda recorrente mensal"
-  },
-  {
-    "nome": "Fundo de Ações",
-    "categoria": "fundo",
-    "risco": "alto",
-    "rentabilidade": "Variável",
-    "aporte_minimo": 100.00,
-    "indicado_para": "Perfil arrojado com foco no longo prazo"
-  }
-]
+```python
+totais_por_categoria = transacoes[transacoes['tipo'] == 'saida'].groupby('categoria')['valor'].sum().round(2)
+resumo_totais = "\n".join([f"- {cat}: R$ {valor:.2f}" for cat, valor in totais_por_categoria.items()])
 ```
+
+Dessa forma, o contexto utilizado pelo Finan é montado a partir dos dados reais presentes nos arquivos da aplicação, em vez de depender apenas de um texto estático copiado manualmente.
+
+### Como os dados são usados no prompt?
+
+Os dados são incorporados ao contexto enviado ao modelo junto com as instruções do **system prompt**. O contexto inclui:
+
+- perfil e objetivos do cliente;
+- patrimônio e reserva de emergência;
+- transações registradas;
+- totais de gastos calculados por categoria;
+- histórico de atendimento;
+- produtos financeiros disponíveis para explicação.
+
+O Finan também possui um pequeno glossário de conceitos financeiros validados no próprio código. Quando uma pergunta contém termos como **Selic, CDI, Tesouro Selic, CDB, LCI, LCA, FII, renda fixa, renda variável** ou **reserva de emergência**, a aplicação adiciona as definições correspondentes ao contexto antes de consultar o modelo.
 
 ---
 
 ## Exemplo de Contexto Montado
 
-> Mostre um exemplo de como os dados são formatados para o agente.
+O contexto enviado ao modelo pode ser sintetizado para destacar as informações mais relevantes:
 
-O exemplo de contexto montado abaixo, se baseia nos dados originais da base de conhecimento, mas os sintetiza deixando apenas as informações mais relevantes, otimizando assim o consumo de tokens. Entretanto, vale lembrar que mais importante do que economizar tokens, é ter todas as informações relevantes disponíveis em seu contexto.
-
-```
+```text
 DADOS DO CLIENTE:
 - Nome: João Silva
 - Perfil: Moderado
 - Objetivo: Construir reserva de emergência
-- Reserva atual: R$ 10.000 (meta: R$ 15.000)
+- Renda mensal: R$ 5.000,00
+- Patrimônio total: R$ 15.000,00
+- Reserva de emergência atual: R$ 10.000,00
+- Meta da reserva: R$ 15.000,00
 
 RESUMO DE GASTOS:
-- Moradia: R$ 1.380
-- Alimentação: R$ 570
-- Transporte: R$ 295
-- Saúde: R$ 188
+- Moradia: R$ 1.380,00
+- Alimentação: R$ 570,00
+- Transporte: R$ 295,00
+- Saúde: R$ 487,90
 - Lazer: R$ 55,90
-- Total de saídas: R$ 2.488,95
+- Total de saídas: R$ 2.788,80
 
 PRODUTOS DISPONÍVEIS PARA EXPLICAR:
 - Tesouro Selic (risco baixo)
 - CDB Liquidez Diária (risco baixo)
 - LCI/LCA (risco baixo)
 - Fundo Imobiliário - FII (risco médio)
-- Fundo de Ações (risco alto
+- Fundo de Ações (risco alto)
 ```
+
+Os valores do resumo são calculados a partir de `data/transacoes.csv`. Por isso, se os dados da base forem alterados, os totais calculados pela aplicação também podem mudar.
+
+---
+
+## Cuidados no Uso da Base
+
+A base de conhecimento serve para **contextualizar e ensinar**, não para transformar o Finan em um consultor de investimentos. O `system prompt` determina que o agente não deve recomendar investimentos, ativos ou produtos financeiros específicos, nem inventar informações que não estejam disponíveis no contexto ou nas definições utilizadas.
+
+Também existe uma proteção determinística para perguntas que contenham padrões de ticker, evitando que o modelo invente informações sobre ativos que não fazem parte dos produtos disponíveis para ensino.
