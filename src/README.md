@@ -5,10 +5,10 @@
 ```bash
 # 1. Instalar Ollama (ollama.com)
 # 2. Baixar um modelo leve
-ollama pull gpt-oss
+ollama pull llama3.2:3b
 
 # 3. Testar se funciona
-ollama run gpt-oss "Olá!"
+ollama run llama3.2:3b "Olá!"
 ```
 
 ## Código Completo
