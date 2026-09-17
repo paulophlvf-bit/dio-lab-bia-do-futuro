@@ -53,7 +53,7 @@ REGRAS:
 8. Nunca julgue ou critique a situação financeira do cliente.
 9. Em cálculos, mostre a lógica de forma simples antes do resultado.
 10. Termine perguntando se o cliente entendeu ou quer um exemplo, quando fizer sentido.
-11. Responda só o que foi perguntado. Não puxe um assunto novo sozinho.
+11. Responda só o que foi perguntado, de forma curta e direta (2 a 4 frases). Não puxe um assunto novo sozinho. Só use mais espaço (uma lista, por exemplo) se a pergunta pedir comparação entre várias opções.
 12. Nunca peça, dê ou repita senha, dado bancário, número de cartão ou outro dado confidencial de qualquer cliente.
 """
 
@@ -61,14 +61,14 @@ REGRAS:
 GLOSSARIO = {
     "selic": "Selic é a taxa básica de juros da economia brasileira, definida periodicamente pelo Copom (Banco Central). Ela serve de referência para todas as outras taxas de juros do país.",
     "cdi": "CDI (Certificado de Depósito Interbancário) é uma taxa de juros usada como referência para investimentos de renda fixa, e costuma ficar bem próxima da Selic.",
-    "tesouro selic": "Tesouro Selic é um título público (você empresta dinheiro para o governo) cuja rentabilidade acompanha a taxa Selic. É considerado de baixo risco e tem alta liquidez (dá para resgatar rapidamente).",
-    "cdb": "CDB (Certificado de Depósito Bancário) é um título emitido por bancos, no qual o investidor empresta dinheiro ao banco e recebe de volta com juros, geralmente em % do CDI.",
-    "lci": "LCI (Letra de Crédito Imobiliário) é um título emitido por bancos, isento de Imposto de Renda para pessoa física, com o dinheiro captado destinado ao setor imobiliário.",
-    "lca": "LCA (Letra de Crédito do Agronegócio) é um título emitido por bancos, isento de Imposto de Renda para pessoa física, com o dinheiro captado destinado ao agronegócio.",
-    "fii": "FII (Fundo de Investimento Imobiliário) é um fundo que investe em imóveis ou títulos ligados ao setor imobiliário, distribuindo parte dos rendimentos aos cotistas periodicamente.",
-    "renda fixa": "Renda fixa é uma categoria de investimento em que as regras de rentabilidade são definidas no momento da aplicação (uma taxa fixa ou atrelada a um índice), geralmente com risco mais baixo.",
-    "renda variável": "Renda variável é uma categoria de investimento cuja rentabilidade não é conhecida previamente e pode variar de acordo com o mercado (ex: ações), geralmente com risco mais alto.",
-    "reserva de emergência": "Reserva de emergência é uma quantia guardada para cobrir despesas inesperadas, geralmente equivalente a 3 a 6 meses de gastos, mantida em investimentos de baixo risco e fácil resgate.",
+    "tesouro selic": "Tesouro Selic é um título público (você empresta dinheiro para o governo) cuja rentabilidade acompanha a taxa Selic. É considerado de baixo risco e tem alta liquidez (dá para resgatar rapidamente). Exemplo: aplicando R$1.000,00 a uma taxa de 10% ao ano, o valor não é R$100,00 simplesmente somado — a rentabilidade é composta diariamente, então o valor exato varia um pouco, mas fica próximo disso ao final de um ano. Risco: o principal risco é o do governo federal não honrar a dívida, considerado o investimento de menor risco do país.",
+    "cdb": "CDB (Certificado de Depósito Bancário) é um título emitido por bancos: você empresta dinheiro ao banco, e ele te devolve com juros no final do prazo (não o contrário — o cliente nunca 'paga' o CDB depois de aplicar). Exemplo: R$1.000,00 aplicados a 10% ao ano rendem, de forma simplificada, R$100,00 de juros nesse período (o valor exato pode variar com a capitalização). Risco: o risco é o banco quebrar e não conseguir devolver o dinheiro — mas CDBs contam com garantia do FGC (Fundo Garantidor de Créditos) até R$250.000,00 por CPF e instituição.",
+    "lci": "LCI (Letra de Crédito Imobiliário) é um título emitido por bancos, isento de Imposto de Renda para pessoa física, com o dinheiro captado destinado ao setor imobiliário. Assim como o CDB, também conta com garantia do FGC até R$250.000,00 por CPF e instituição.",
+    "lca": "LCA (Letra de Crédito do Agronegócio) é um título emitido por bancos, isento de Imposto de Renda para pessoa física, com o dinheiro captado destinado ao agronegócio. Assim como o CDB, também conta com garantia do FGC até R$250.000,00 por CPF e instituição.",
+    "fii": "FII (Fundo de Investimento Imobiliário) é um fundo que investe em imóveis ou títulos ligados ao setor imobiliário, distribuindo parte dos rendimentos aos cotistas periodicamente (geralmente mensal). Risco: o valor das cotas pode variar (é negociado na bolsa) e não há garantia do FGC — é considerado risco médio.",
+    "renda fixa": "Renda fixa é uma categoria de investimento em que as regras de rentabilidade são definidas no momento da aplicação (uma taxa fixa ou atrelada a um índice, como o CDI ou a Selic), geralmente com risco mais baixo.",
+    "renda variável": "Renda variável é uma categoria de investimento cuja rentabilidade não é conhecida previamente e pode variar de acordo com o mercado (ex: ações), geralmente com risco mais alto. Não há garantia do FGC.",
+    "reserva de emergência": "Reserva de emergência é uma quantia guardada para cobrir despesas inesperadas, geralmente equivalente a 3 a 6 meses de gastos, mantida em investimentos de baixo risco e fácil resgate (como Tesouro Selic ou CDB de liquidez diária).",
 }
 
 def buscar_definicoes(msg):
@@ -144,13 +144,18 @@ def perguntar(msg):
 
     Pergunta: {msg}"""
 
+    # Respostas objetivas (quanto/qual/etc.) ficam bem mais curtas; explicações e listas
+    # de produtos têm mais espaço, mas ainda limitado para evitar que o modelo "se perca".
+    limite_tokens = 120 if eh_consulta_objetiva(msg) else 350
+
     r = requests.post(OLLAMA_URL, json={
         "model": MODELO,
         "prompt": prompt,
         "stream": False,
         "options": {
             "temperature": 0.1,
-            "seed": 42
+            "seed": 42,
+            "num_predict": limite_tokens
         }
     })
     resposta = r.json()['response']
