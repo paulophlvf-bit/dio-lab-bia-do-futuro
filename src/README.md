@@ -29,3 +29,5 @@ streamlit run .\src\app.py
 ```
 
 ## Evidência de Execução
+
+<img width="1098" height="848" alt="image" src="https://github.com/user-attachments/assets/4cb70db7-8835-4fd4-86f1-037680f2dc62" />
