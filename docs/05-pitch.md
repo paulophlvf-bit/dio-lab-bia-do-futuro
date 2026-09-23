@@ -72,4 +72,4 @@ Apresentar de forma rápida e prática o problema, a arquitetura, as proteções
 
 > Adicione aqui o link do pitch após a gravação.
 
-[Link do vídeo]
+https://drive.google.com/file/d/1kx3KYc9XENZt02t8_hor-yzYnYkGiUw0/view?usp=sharing
