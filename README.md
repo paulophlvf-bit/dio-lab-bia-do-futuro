@@ -43,7 +43,6 @@ data/       Dados fictícios do cliente, transações e produtos
 docs/       Documentação, base de conhecimento, prompts, métricas e pitch
 src/        Aplicação Streamlit
 assets/     Recursos e materiais visuais/referências
-examples/   Referências do desafio
 ```
 
 ## Como executar
