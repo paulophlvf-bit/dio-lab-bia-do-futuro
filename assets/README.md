@@ -1,6 +1,5 @@
 # Assets
 
-Esta pasta é destinada a recursos visuais do seu projeto:
 
 ## Diagramas de arquitetura
 <img width="1536" height="1024" alt="Finan" src="https://github.com/user-attachments/assets/644e47b7-9ef8-4f38-8d8e-e1e99cef973d" />
